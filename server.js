@@ -13,16 +13,17 @@ const PORT = process.env.PORT || 3000;
 // 1. MEDIDAS DE SEGURIDAD EN INFRAESTRUCTURA Y CABECERAS HTTP
 app.use(helmet({
   contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+    scriptSrcAttr: ["'unsafe-inline'"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+    fontSrc: ["'self'", "https://fonts.gstatic.com"],
+    imgSrc: ["'self'", "data:"],
+    connectSrc: ["'self'"]
+  }
+},
+crossOriginEmbedderPolicy: false
 }));
 
 app.use(express.json({ limit: '10kb' })); // Prevención de payloads excesivos
