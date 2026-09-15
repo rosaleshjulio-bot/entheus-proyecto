@@ -106,6 +106,6 @@ app.get('/api/empleados/legajos', (req, res) => {
 
 app.use(express.static(__dirname));
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`[SECURITY OK] Servidor ejecutándose en el puerto ${PORT}`);
 });
