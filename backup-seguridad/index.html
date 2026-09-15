@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Centralizado - Entheus</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .container { width: 100%; max-width: 500px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { color: var(--primary-dark); margin-bottom: 20px; text-align: center; font-size: 22px; }
+        
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+        .tab-btn { flex: 1; background: none; border: none; padding: 10px; font-weight: bold; color: var(--text-light); cursor: pointer; text-align: center; font-size: 14px; }
+        .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
+
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--text-main); }
+        input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+        button.btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; transition: background 0.2s; }
+        button.btn-action:hover { background: var(--primary-dark); }
+
+        .alert-msg { padding: 10px; margin-bottom: 15px; border-radius: 6px; font-size: 14px; display: none; text-align: center; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Portal Corporativo Entheus</h2>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login-section', this)">Iniciar Sesión</button>
+            <button class="tab-btn" onclick="switchTab('registro-section', this)">Crear mi Cuenta (Empleado)</button>
+        </div>
+
+        <!-- SECCIÓN LOGIN -->
+        <div id="login-section" class="form-section active">
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label>Correo Electrónico / Usuario</label>
+                    <input type="text" name="username" required placeholder="correo@entheus.com o usuario admin">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-action">Ingresar al Sistema</button>
+            </form>
+        </div>
+
+        <!-- SECCIÓN REGISTRO EMPLEADO -->
+        <div id="registro-section" class="form-section">
+            <div id="alert-registro" class="alert-msg"></div>
+            <form onsubmit="registrarEmpleadoAutonomo(event)">
+                <div class="form-group">
+                    <label>Número de Legajo (4 números) *</label>
+                    <input type="text" id="reg-legajo" required maxlength="4" placeholder="Ej: 4021">
+                </div>
+                <div class="form-group">
+                    <label>Nombre y Apellido *</label>
+                    <input type="text" id="reg-nombre" required placeholder="Ej: Carlos Gomez">
+                </div>
+                <div class="form-group">
+                    <label>DNI / CUIL *</label>
+                    <input type="text" id="reg-cuil" required placeholder="Ej: 20-28111222-3">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="reg-email" required placeholder="carlos.gomez@entheus.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña *</label>
+                    <input type="password" id="reg-pass" required placeholder="Elige tu contraseña">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Contraseña *</label>
+                    <input type="password" id="reg-pass-confirm" required placeholder="Vuelve a escribir tu contraseña">
+                </div>
+                <button type="submit" class="btn-action">Registrarse y Activar Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(sectionId, btn) {
+            document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function registrarEmpleadoAutonomo(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('alert-registro');
+            
+            const pass1 = document.getElementById('reg-pass').value;
+            const pass2 = document.getElementById('reg-pass-confirm').value;
+
+            if (pass1 !== pass2) {
+                alertBox.style.display = 'block';
+                alertBox.className = 'alert-msg alert-error';
+                alertBox.textContent = 'Las contraseñas no coinciden.';
+                return;
+            }
+
+            const data = {
+                nroLegajo: document.getElementById('reg-legajo').value,
+                nombre: document.getElementById('reg-nombre').value,
+                cuil: document.getElementById('reg-cuil').value,
+                email: document.getElementById('reg-email').value,
+                password: pass1
+            };
+
+            fetch('/api/empleado/registrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                alertBox.style.display = 'block';
+                if (result.exito) {
+                    alertBox.className = 'alert-msg alert-success';
+                    alertBox.textContent = result.mensaje;
+                    setTimeout(() => switchTab('login-section', document.querySelectorAll('.tab-btn')[0]), 2000);
+                } else {
+                    alertBox.className = 'alert-msg alert-error';
+                    alertBox.textContent = result.error || 'Error al registrar.';
+                }
+            })
+            .catch(err => {
+                alertBox.style.display = 'block';
+                alertBox.className = 'alert-msg alert-error';
+                alertBox.textContent = 'Error de conexión.';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -32,7 +32,6 @@ app.use(helmet({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Configuración de sesiones optimizada para producción
 app.use(session({
     secret: process.env.SESSION_SECRET || 'entheus_clave_secreta_segura_2026',
     resave: false,
@@ -44,11 +43,10 @@ app.use(session({
     }
 }));
 
-// Servir archivos estáticos desde la carpeta 'public' (index.html, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 2. RATE LIMITING (PROTECCIÓN CONTRA ATAQUES)
+// 2. RATE LIMITING
 // ==========================================
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -65,7 +63,7 @@ const strictLimiter = rateLimit({
 app.use(globalLimiter);
 
 // ==========================================
-// 3. CONFIGURACIÓN DE CARGA DE ARCHIVOS (MULTER)
+// 3. CARGA DE ARCHIVOS (MULTER)
 // ==========================================
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -95,7 +93,7 @@ const upload = multer({
 });
 
 // ==========================================
-// 4. BASES DE DATOS EN MEMORIA Y USUARIOS DE STAFF
+// 4. BASES DE DATOS EN MEMORIA Y USUARIOS
 // ==========================================
 const usuariosStaff = [
     { usuario: 'rrhh@entheus.com', passwordHash: bcrypt.hashSync('123456', 10), departamento: 'rrhh', nombre: 'Lic. Gomez' },
@@ -111,7 +109,7 @@ let legajosValidos = [
 let baseDatosCVs = [];
 
 // ==========================================
-// 5. RUTAS DE AUTENTICACIÓN Y SEGURIDAD DE SESIÓN
+// 5. RUTAS DE AUTENTICACIÓN
 // ==========================================
 app.post('/api/login', strictLimiter, (req, res) => {
     const { usuario, password, departamento } = req.body;
@@ -141,7 +139,6 @@ app.post('/api/login', strictLimiter, (req, res) => {
     }
 });
 
-// Middleware de protección estricta
 function verificarSesion(req, res, next) {
     if (req.session && req.session.user) {
         return next();
@@ -149,12 +146,10 @@ function verificarSesion(req, res, next) {
     return res.status(403).sendFile(path.join(__dirname, 'public', 'index.html'));
 }
 
-// Ruta protegida del panel (admin.html en la raíz)
 app.get('/admin.html', verificarSesion, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// Ruta para destruir sesión (Logout)
 app.post('/api/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -166,7 +161,7 @@ app.post('/api/logout', (req, res) => {
 });
 
 // ==========================================
-// 6. ENDPOINTS PÚBLICOS Y DE GESTIÓN
+// 6. ENDPOINTS DE GESTIÓN Y EMPLEADOS
 // ==========================================
 app.post('/api/cotizar', strictLimiter, (req, res) => {
   const { empresa, contacto, email, telefono } = req.body;
