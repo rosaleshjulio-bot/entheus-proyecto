@@ -1550,34 +1550,36 @@
         /* ======================================================
            BACKOFFICE CON CARGA DE RECIBOS Y STAFF
         ====================================================== */
-        function autenticarStaff(e) {
+       async function autenticarStaff(e) {
             e.preventDefault();
-            const user = document.getElementById('staff-user').value.trim();
-            const pass = document.getElementById('staff-pass').value.trim();
-            const role = document.getElementById('staff-role-select').value;
+            const usuario = document.getElementById('staff-user').value.trim();
+            const password = document.getElementById('staff-pass').value.trim();
+            const departamento = document.getElementById('staff-role-select').value;
 
-            if (!role) {
+            if (!departamento) {
                 showAlert('alert-staff-login', 'Seleccione un departamento.', 'error');
                 return;
             }
 
-            if (pass !== '123456') {
-                showAlert('alert-staff-login', 'Contraseña incorrecta. Use 123456.', 'error');
-                return;
+            try {
+                const respuesta = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, password, departamento })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.exito) {
+                    window.location.href = resultado.redirectUrl;
+                } else {
+                    showAlert('alert-staff-login', resultado.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                showAlert('alert-staff-login', 'Ocurrió un error al intentar conectar con el servidor.', 'error');
             }
-
-            staffSesion = { user, role };
-
-            document.getElementById('user-display-name').textContent = user.split('@')[0].toUpperCase();
-            document.getElementById('user-display-role').textContent = role.toUpperCase();
-
-            document.getElementById('staff-login-container').style.display = 'none';
-            document.getElementById('staff-dashboard-container').style.display = 'block';
-
-            renderizarTablasBackoffice();
-            aplicarPermisosRol();
         }
-
         function subirReciboStaff(e) {
             e.preventDefault();
             const legajo = document.getElementById('recibo-legajo').value.trim().toUpperCase();
