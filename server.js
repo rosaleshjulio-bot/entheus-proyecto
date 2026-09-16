@@ -22,7 +22,7 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:"],
+      imgSrc: ["'self'", "data:", "https://unsplash.com"],
       connectSrc: ["'self'"]
     }
   },
@@ -44,7 +44,7 @@ app.use(session({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-});
+
 // ==========================================
 // 2. RATE LIMITING
 // ==========================================
