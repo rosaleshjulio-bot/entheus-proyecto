@@ -44,7 +44,7 @@ app.use(session({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-});
+
 // ==========================================
 // 2. RATE LIMITING
 // ==========================================
