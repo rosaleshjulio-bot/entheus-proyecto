@@ -43,8 +43,12 @@ app.use(session({
     }
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
+
 // ==========================================
 // 2. RATE LIMITING
 // ==========================================
@@ -143,7 +147,7 @@ function verificarSesion(req, res, next) {
     if (req.session && req.session.user) {
         return next();
     }
-    return res.status(403).sendFile(path.join(__dirname, 'public', 'index.html'));
+    return res.status(403).sendFile(path.join(__dirname, 'index.html'));
 }
 
 app.get('/admin.html', verificarSesion, (req, res) => {
@@ -225,6 +229,21 @@ app.post('/api/empleados/alta', strictLimiter, verificarSesion, (req, res) => {
   });
 
   res.json({ exito: true, mensaje: `Personal ${nombre} (${rol}) dado de alta con éxito.` });
+});
+
+app.delete('/api/empleados/baja/:legajoNum', verificarSesion, (req, res) => {
+  const { legajoNum } = req.params;
+  const index = legajosValidos.findIndex(emp => emp.legajoNum === legajoNum);
+
+  if (index === -1) {
+    return res.status(404).json({ exito: false, error: 'No se encontró el legajo indicado.' });
+  }
+
+  const [baja] = legajosValidos.splice(index, 1);
+  return res.json({
+    exito: true,
+    mensaje: `Se dio de baja al legajo ${baja.legajoNum} (${baja.nombre}).`
+  });
 });
 
 app.post('/api/empleados/subir-masivo', strictLimiter, verificarSesion, upload.array('documentosPDF', 50), (req, res) => {
