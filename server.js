@@ -53,14 +53,43 @@ app.use(session({
   }
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// ARCHIVOS PRIVADOS Y ARCHIVOS ESTÁTICOS
 
-// Servir archivos públicos SOLO desde la raíz (index.html, estilos, etc.)
-app.use(express.static(path.join(__dirname, '.')));
+// Bloquear archivos y carpetas sensibles antes de servir contenido estático.
+app.use((req, res, next) => {
+  const rutasPrivadas = [
+    /^\/\.env(?:$|\/)/i,
+    /^\/data(?:$|\/)/i,
+    /^\/database(?:$|\/)/i,
+    /^\/backup-seguridad(?:$|\/)/i,
+    /^\/uploads(?:$|\/)/i,
+    /^\/server\.js$/i,
+    /^\/package\.json$/i,
+    /^\/package-lock\.json$/i,
+    /^\/ecosystem\.config\.js$/i,
+    /^\/README\.md$/i,
+    /^\/private-admin\.html$/i,
+    /^\/private-rrhh\.html$/i
+  ];
+
+  if (rutasPrivadas.some(ruta => ruta.test(req.path))) {
+    return res.status(404).send('Not Found');
+  }
+
+  next();
+});
+
+// Proteger el panel administrativo antes de servir archivos estáticos.
+app.get('/admin.html', verificarSesion, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Servir los archivos públicos desde la raíz del proyecto.
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta raíz: servir index.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 2. RATE LIMITING
@@ -204,10 +233,6 @@ app.post('/api/login', strictLimiter, (req, res) => {
       error: 'Credenciales incorrectas o departamento inválido.'
     });
   }
-});
-
-app.get('/admin.html', verificarSesion, (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 app.post('/api/logout', (req, res) => {
